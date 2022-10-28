@@ -1,3 +1,4 @@
-import GoogleDriveWalletRecovery from "./GoogleDriveWalletRecovery";
 
-export { GoogleDriveWalletRecovery }
+export * from './GoogleRecovery';
+
+export type { RecoveryMechanism } from './types'

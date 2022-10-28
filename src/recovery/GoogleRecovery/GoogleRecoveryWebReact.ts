@@ -1,6 +1,7 @@
 import { Wallet } from "ethers";
 import React from "react";
-import { loadGoogleScript, Metadata, uploadTextFileToDrive } from "./utils";
+import { loadGoogleScript, uploadTextFileToDrive } from './utils';
+import { Metadata } from './types'
 
 interface Props {
   googleClientID: string;
@@ -10,7 +11,7 @@ const SCOPES = ["https://www.googleapis.com/auth/drive"];
 const ZERO_WALLET_FOLDER_NAME = ".zero-wallet";
 const ZERO_WALLET_FILE_NAME = "key";
 
-export default function GoogleDriveWalletRecovery({ googleClientID }: Props) {
+export default function GoogleDriveWalletRecoveryReact({ googleClientID }: Props) {
   const [tokenClient, setTokenClient] = React.useState<any>();
   const [gapiInited, setGapiInited] = React.useState(false);
   const [gisInited, setGisInited] = React.useState(false);
