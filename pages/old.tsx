@@ -3,27 +3,13 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { Wallet } from 'ethers'
 import { Box, Button, ButtonGroup, Flex, Heading, useColorMode } from '@chakra-ui/react'
-import { GoogleRecoveryWeb, GoogleRecoveryMechanismOptions } from '../src/recovery'
+import { GoogleRecoveryWebReact } from '../src/recovery'
 
 const GOOGLE_CLEINT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
-const ZERO_WALLET_FOLDER_NAME = ".zero-wallet";
-const ZERO_WALLET_FILE_NAME = "key";
-
-const googleRecoveryMechanismOptions: GoogleRecoveryMechanismOptions = {
-  googleClientId: GOOGLE_CLEINT_ID,
-  folderNameGD: ZERO_WALLET_FOLDER_NAME,
-  fileNameGD: ZERO_WALLET_FILE_NAME,
-  allowMultiKeys: true,
-  handleExistingKey: 'Overwrite'
-}
 
 const Home: NextPage = () => {
-  // const recoveryMechanism = new GoogleDriveWalletRecovery(googleRecoveryMechanismOptions)
   // google user
-  // const { loading, importWalletFromGD, exportWalletToGD, inited } = GoogleDriveWalletRecovery({ googleClientID: GOOGLE_CLEINT_ID })
-  const [inited, setInited] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
-  const [recoveryMechanism, setRecoveryMechanism] = React.useState<GoogleRecoveryWeb>()
+  const { loading, importWalletFromGD, exportWalletToGD, inited } = GoogleRecoveryWebReact({ googleClientID: GOOGLE_CLEINT_ID })
 
   // wallets
   const [wallet, setWallet] = React.useState<Wallet | null>(null)
@@ -37,13 +23,9 @@ const Home: NextPage = () => {
   }
 
   const handleGDExport = async () => {
-    if (loading) throw Error("Loading import or export");
-    if (!recoveryMechanism) throw new Error("Recovery is not defined.")
-    setLoading(true);
-
     try {
       if (!wallet) throw Error("You have no wallet")
-      await recoveryMechanism.setupRecovery(wallet)
+      await exportWalletToGD(wallet)
       console.log("Export successful")
     }
     catch (err) {
@@ -55,16 +37,11 @@ const Home: NextPage = () => {
       }
       console.log("Export Error Message:", errorMessage)
     }
-    setLoading(false);
   }
 
   const handleGDImport = async () => {
-    if (loading) throw Error("Loading import or export");
-    if (!recoveryMechanism) throw new Error("Recovery is not defined.")
-    setLoading(true);
-
     try {
-      const newWallet = await recoveryMechanism.initiateRecovery(3)
+      const newWallet = await importWalletFromGD()
       setWallet(newWallet!)
       console.log("Import successful")
     }
@@ -77,24 +54,15 @@ const Home: NextPage = () => {
       }
       console.log("Import Error Message:", errorMessage)
     }
-    setLoading(false);
   }
 
-  React.useEffect(() => {
-    recoveryMechanism?.recoveryReadyPromise().then(() => {
-      setInited(true);
-    })
-  }, [recoveryMechanism])
-
-  React.useEffect(() => {
+  React.useCallback(() => {
     setColorMode('dark')
-    const newRecoveryMechanism = new GoogleRecoveryWeb(googleRecoveryMechanismOptions)
-    setRecoveryMechanism(newRecoveryMechanism)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
-    <Box p='10' backgroundColor='black' width={'100vw'} height={'100vh'}>
+    <Box backgroundColor='black' width={'100vw'} height={'100vh'}>
       <Head>
         <title>Google Drive Wallet Auth</title>
         <meta name="description" content="Google drive wallet recovery" />
@@ -113,7 +81,7 @@ const Home: NextPage = () => {
           </Heading>
         }
 
-        <ButtonGroup mt='10' gap='10' visibility={inited ? 'visible' : 'hidden'}>
+        <ButtonGroup gap='10' visibility={inited ? 'visible' : 'hidden'}>
 
           <Button onClick={handleCreateNewWallet} isLoading={loading} p='10'>
             Create new Wallet

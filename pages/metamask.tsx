@@ -3,19 +3,10 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { Wallet } from 'ethers'
 import { Box, Button, ButtonGroup, Flex, Heading, useColorMode } from '@chakra-ui/react'
-import { GoogleRecoveryWeb, GoogleRecoveryMechanismOptions } from '../src/recovery'
+import { MetamaskRecovery, MetamaskRecoveryMechanismOption } from '../src/recovery'
 
-const GOOGLE_CLEINT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
-const ZERO_WALLET_FOLDER_NAME = ".zero-wallet";
-const ZERO_WALLET_FILE_NAME = "key";
+const metamaskRecoveryMechanismOption: MetamaskRecoveryMechanismOption = {}
 
-const googleRecoveryMechanismOptions: GoogleRecoveryMechanismOptions = {
-  googleClientId: GOOGLE_CLEINT_ID,
-  folderNameGD: ZERO_WALLET_FOLDER_NAME,
-  fileNameGD: ZERO_WALLET_FILE_NAME,
-  allowMultiKeys: true,
-  handleExistingKey: 'Overwrite'
-}
 
 const Home: NextPage = () => {
   // const recoveryMechanism = new GoogleDriveWalletRecovery(googleRecoveryMechanismOptions)
@@ -23,7 +14,7 @@ const Home: NextPage = () => {
   // const { loading, importWalletFromGD, exportWalletToGD, inited } = GoogleDriveWalletRecovery({ googleClientID: GOOGLE_CLEINT_ID })
   const [inited, setInited] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
-  const [recoveryMechanism, setRecoveryMechanism] = React.useState<GoogleRecoveryWeb>()
+  const [recoveryMechanism, setRecoveryMechanism] = React.useState<MetamaskRecovery>()
 
   // wallets
   const [wallet, setWallet] = React.useState<Wallet | null>(null)
@@ -36,7 +27,7 @@ const Home: NextPage = () => {
     setWallet(newWallet)
   }
 
-  const handleGDExport = async () => {
+  const handleExport = async () => {
     if (loading) throw Error("Loading import or export");
     if (!recoveryMechanism) throw new Error("Recovery is not defined.")
     setLoading(true);
@@ -58,7 +49,7 @@ const Home: NextPage = () => {
     setLoading(false);
   }
 
-  const handleGDImport = async () => {
+  const handleImport = async () => {
     if (loading) throw Error("Loading import or export");
     if (!recoveryMechanism) throw new Error("Recovery is not defined.")
     setLoading(true);
@@ -88,7 +79,7 @@ const Home: NextPage = () => {
 
   React.useEffect(() => {
     setColorMode('dark')
-    const newRecoveryMechanism = new GoogleRecoveryWeb(googleRecoveryMechanismOptions)
+    const newRecoveryMechanism = new MetamaskRecovery(metamaskRecoveryMechanismOption)
     setRecoveryMechanism(newRecoveryMechanism)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -119,12 +110,12 @@ const Home: NextPage = () => {
             Create new Wallet
           </Button>
 
-          <Button onClick={handleGDExport} disabled={!wallet} isLoading={loading} p='10'>
-            Export to Google Drive
+          <Button onClick={handleExport} disabled={!wallet} isLoading={loading} p='10'>
+            setupRecovery
           </Button>
 
-          <Button onClick={handleGDImport} isLoading={loading} p='10'>
-            Import from Google Drive
+          <Button onClick={handleImport} isLoading={loading} p='10'>
+            initiateRecovery
           </Button>
         </ButtonGroup>
         <ButtonGroup m={50} backgroundColor='black'>
