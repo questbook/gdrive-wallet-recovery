@@ -1,5 +1,5 @@
 import { providers, Wallet } from "ethers";
-import { arrayify, concat, entropyToMnemonic, keccak256 } from "ethers/lib/utils";
+import { arrayify, entropyToMnemonic, keccak256 } from "ethers/lib/utils";
 import { RecoveryMechanism } from "../types";
 import { MetamaskRecoveryMechanismOption } from "./types";
 import { toUtf8Bytes } from "@ethersproject/strings";
