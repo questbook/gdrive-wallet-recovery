@@ -1,7 +1,9 @@
-import { ethers, Wallet } from "ethers";
-import { concat, entropyToMnemonic, keccak256 } from "ethers/lib/utils";
+import { providers, Wallet } from "ethers";
+import { arrayify, concat, entropyToMnemonic, keccak256 } from "ethers/lib/utils";
 import { RecoveryMechanism } from "../types";
 import { MetamaskRecoveryMechanismOption } from "./types";
+import { toUtf8Bytes } from "@ethersproject/strings";
+
 
 const MESSAGE = "recover-questbook";
 
@@ -18,13 +20,13 @@ export default class MetamaskRecovery implements RecoveryMechanism {
     return true;
   }
 
-  _generateWalletFromString(seed: string): ethers.Wallet {
+  _generateWalletFromString(seed: string): Wallet {
     const mnemonic = entropyToMnemonic(seed);
     return Wallet.fromMnemonic(mnemonic);
   }
 
-  _hashSignedMessage(signedMessage: string): string {
-    const hashedString = keccak256(concat([signedMessage]));
+  _hashMessage(message: string): string {    
+    const hashedString = keccak256(toUtf8Bytes(message));
     return hashedString;
   }
 
@@ -33,23 +35,24 @@ export default class MetamaskRecovery implements RecoveryMechanism {
     if (!window.ethereum) throw new Error("Couldn't connect to Metamask")
 
     // @ts-ignore
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const provider = new providers.Web3Provider(window.ethereum)
     await provider.send("eth_requestAccounts", []);
     const signer = provider.getSigner();
-    const signedMessage = await signer.signMessage(message)
+    const signedMessage = await signer.signMessage(arrayify(message))
     return signedMessage;
   }
 
   async _getNewZeroWalletMetamask() {
-    const signedMessage = await this._signWithMetamask(MESSAGE);
-    const hash = this._hashSignedMessage(signedMessage);
-    const newZeroWallet = this._generateWalletFromString(hash);
+    const hashedMessage = this._hashMessage(MESSAGE);
+    const signedMessage = await this._signWithMetamask(hashedMessage);
+    const hashedSignedMessage = this._hashMessage(signedMessage);
+    const newZeroWallet = this._generateWalletFromString(hashedSignedMessage);
     return newZeroWallet;
   }
 
   async _changeScwOwner(
-    oldWallet: ethers.Wallet,
-    newWallet: ethers.Wallet
+    oldWallet: Wallet,
+    newWallet: Wallet
   ): Promise<void> {
     // @TODO: handle changing the owner with Biconomy from the
     // old wallet to the new one.
